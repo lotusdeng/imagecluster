@@ -1,0 +1,12 @@
+{
+    "ip": "127.0.0.1",
+    "port": 9090,
+    "logLevel": "info",
+    "vibeLogLevel": "info",
+    "imageServers":[
+        {
+            "ip": "127.0.0.1",
+            "port": 9091
+        }
+    ]
+}

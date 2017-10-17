@@ -1,0 +1,38 @@
+
+
+
+//从根目录创建子目录
+POST /image?path
+{
+	"name": "imagedir1",
+	"isDir": true
+}
+
+//从目录vmdir1下创建虚拟机
+POST /image?path=imagedir1
+{
+	"name": "image1",
+	"isDir": false,
+	"format": "raw",
+	"smbPathInImageServer": "\\\\127.0.0.1\\Lotus\\os\\CentOS-6.5-x86_64-bin-DVD1.iso",
+	"nfsPathInImageServer": "//127.0.0.1/Lotus/os/CentOS-6.5-x86_64-bin-DVD1.iso",
+    "volumeLabelName": "Lotus",
+    "pathInVolume": "os/CentOS-6.5-x86_64-bin-DVD1.iso",
+    "sizeInVolume": 4467982336
+}
+{
+	"name": "image1",
+	"isDir": false,
+	"format": "ewf",
+	"smbPathInImageServer": "\\\\127.0.0.1\\Lotus\\os\\hack1.E01",
+	"nfsPathInImageServer": "//127.0.0.1/Lotus/os/hack1.E01",
+    "volumeLabelName": "Lotus",
+    "pathInVolume": "os/hack1.E01",
+    "sizeInVolume": 3124542822 
+}
+返回
+{
+	"code": 0,
+	"msg": ""
+}
+

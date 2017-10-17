@@ -1,0 +1,14 @@
+{
+    "ip": "127.0.0.1",
+    "port": 9091,
+    "logLevel": "info",
+    "vibeLogLevel": "info",
+    "smbAccount": "lotus",
+    "discardVolumes":[
+        "C:\\",
+		"D:\\",
+		"E:\\",
+		"F:\\",
+        "Z:\\"  
+    ]
+}
