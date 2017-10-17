@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <log>
+    <file level="info" rotationMBSize="512" autoFlush="true"></file>
+    <console level="info"></console>
+  </log>
+  <imageCenter ip="127.0.0.1" port="9090" requestTimeout="5"></imageCenter>
+  <mountPoint>C:\imageroot</mountPoint>
+  <dokanOption debug="true" stderr="true" threadCount="0"></dokanOption>
+</root>
