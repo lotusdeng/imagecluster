@@ -1,0 +1,6 @@
+{
+    "imageCenterIP": "127.0.0.1",
+    "imageCenterPort": 9090,
+    "logLevel": "info",
+    "vibeLogLevel": "info"
+}
