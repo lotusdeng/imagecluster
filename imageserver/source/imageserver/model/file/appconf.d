@@ -10,6 +10,7 @@ struct AppConf
     ushort port;
     string logLevel;
     string vibeLogLevel;
+    bool autoSetSmb;
     string smbAccount;
     string[] discardVolumes;
 }

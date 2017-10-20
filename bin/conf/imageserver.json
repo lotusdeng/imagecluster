@@ -3,12 +3,9 @@
     "port": 9091,
     "logLevel": "info",
     "vibeLogLevel": "info",
-    "smbAccount": "lotus",
+    "autoSetSmb": true,
+    "smbAccount": "denglian",
     "discardVolumes":[
-        "C:\\",
-		"D:\\",
-		"E:\\",
-		"F:\\",
-        "Z:\\"  
+       
     ]
 }

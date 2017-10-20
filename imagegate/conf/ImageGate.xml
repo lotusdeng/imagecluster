@@ -4,7 +4,9 @@
     <file level="info" rotationMBSize="512" autoFlush="true"></file>
     <console level="info"></console>
   </log>
+  <ip>127.0.0.1</ip>
   <imageCenter ip="127.0.0.1" port="9090" requestTimeout="5"></imageCenter>
   <mountPoint>C:\imageroot</mountPoint>
+  <onlyShowActive>true</onlyShowActive>
   <dokanOption debug="true" stderr="true" threadCount="0"></dokanOption>
 </root>

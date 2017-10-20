@@ -12,10 +12,12 @@ namespace model
 		int fileLogRotationMBSize_;
 		bool fileLogAutoFlush_;
 		std::string consoleLogLevel_;
+		std::string ip_;
 		std::string imageCenterIP_;
 		int imageCenterPort_;
 		int imageCenterRequestTimeout_;
 		std::string mountPoint_;
+		bool onlyShowActive_;
 		bool dokanOptionDebug_;
 		bool dokanOptionStderr_;
 		int dokanOptionThreadCount_;

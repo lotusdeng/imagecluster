@@ -204,7 +204,7 @@ static BOOL AddSeSecurityNamePrivilege()
 static NTSTATUS DOKAN_CALLBACK MirrorCreateFile(LPCWSTR FileName, PDOKAN_IO_SECURITY_CONTEXT SecurityContext, 
 	ACCESS_MASK DesiredAccess, ULONG FileAttributes, ULONG ShareAccess, ULONG CreateDisposition, ULONG CreateOptions, PDOKAN_FILE_INFO DokanFileInfo)
 {
-	LOG(info) << "MirrorCreateFile FileName:" << basecpp::toUTF8(FileName);
+	LOG(debug) << "MirrorCreateFile FileName:" << basecpp::toUTF8(FileName);
 
 	NTSTATUS status = STATUS_SUCCESS;
 	//DokanFileInfo->Context = (uint64_t)ewfHandle;
@@ -216,44 +216,47 @@ static NTSTATUS DOKAN_CALLBACK MirrorCreateFile(LPCWSTR FileName, PDOKAN_IO_SECU
 		else
 		{
 			ImageGetRep imageGetRep;
-			listImageInImageCenter(basecpp::toUTF8(FileName), imageGetRep);
+			listImageInImageCenter(basecpp::toUTF8(FileName), model::AppConfSingleton::get_const_instance().onlyShowActive_,
+				imageGetRep);
 			LOG(info) << "child file count:" << imageGetRep.items.size();
 			if (imageGetRep.items.size() == 1)
 			{
 				Image image = imageGetRep.items.at(0);
-				if (image.isOnline_)
+				if (image.isOnline_ && !image.isUploading_)
 				{
 					FileHandle* fd = new FileHandle;
 					fd->size_ = image.size_;
 					fd->sizeInVolume_ = image.sizeInVolume_;
+					std::string openPath = image.smbPathInImageServer_.find(model::AppConfSingleton::get_const_instance().ip_) != std::string::npos ?
+						image.localPathInImageServer_ : image.smbPathInImageServer_;
 					if (image.format_ == "raw")
 					{
 						fd->isRaw_ = true;
-						fd->rawFd_ = fopen(image.smbPathInImageServer_.c_str(), "rb");
+						fd->rawFd_ = fopen(openPath.c_str(), "rb");
 						if (fd->rawFd_ == NULL)
 						{
-							LOG(warning) << "fopen fail, smb:" << image.smbPathInImageServer_;
+							LOG(warning) << "fopen fail, smb:" << openPath;
 							delete fd;
 							return STATUS_OPEN_FAILED;
 						}
 						else
 						{
-							LOG(info) << "fopen fd:" << fd->rawFd_ << ", smb:" << image.smbPathInImageServer_;
+							LOG(info) << "fopen fd:" << fd->rawFd_ << ", smb:" << openPath;
 						}
 					}
 					else
 					{
 						fd->isRaw_ = false;
-						int ret = Ewf_Open(image.smbPathInImageServer_.c_str(), &fd->ewfFd_);
+						int ret = Ewf_Open(openPath.c_str(), &fd->ewfFd_);
 						if (ret != 0)
 						{
-							LOG(debug) << "Ewf_Open fail, smb:" << image.smbPathInImageServer_;
+							LOG(debug) << "Ewf_Open fail, smb:" << openPath;
 							delete fd;
 							return STATUS_OPEN_FAILED;
 						}
 						else
 						{
-							LOG(info) << "Ewf_Open sucess fd:" << fd->ewfFd_ << ", smb:" << image.smbPathInImageServer_;
+							LOG(info) << "Ewf_Open sucess fd:" << fd->ewfFd_ << ", smb:" << openPath;
 						}
 					}
 					
@@ -275,7 +278,7 @@ static NTSTATUS DOKAN_CALLBACK MirrorCreateFile(LPCWSTR FileName, PDOKAN_IO_SECU
 
 static void DOKAN_CALLBACK MirrorCloseFile(LPCWSTR FileName, PDOKAN_FILE_INFO DokanFileInfo)
 {
-	LOG(info) << "MirrorCloseFile FileName:" << basecpp::toUTF8(FileName) << ", context:" << DokanFileInfo->Context;
+	LOG(debug) << "MirrorCloseFile FileName:" << basecpp::toUTF8(FileName) << ", context:" << DokanFileInfo->Context;
 	
 	if (DokanFileInfo->Context)
 	{
@@ -297,7 +300,7 @@ static void DOKAN_CALLBACK MirrorCloseFile(LPCWSTR FileName, PDOKAN_FILE_INFO Do
 
 static void DOKAN_CALLBACK MirrorCleanup(LPCWSTR FileName, PDOKAN_FILE_INFO DokanFileInfo)
 {
-	LOG(info) << "MirrorCleanup FileName:" << basecpp::toUTF8(FileName) << ", context:" << DokanFileInfo->Context;
+	LOG(debug) << "MirrorCleanup FileName:" << basecpp::toUTF8(FileName) << ", context:" << DokanFileInfo->Context;
 	return;
 }
 
@@ -305,7 +308,7 @@ static NTSTATUS DOKAN_CALLBACK MirrorReadFile(LPCWSTR FileName, LPVOID Buffer, D
 	LPDWORD ReadLength, LONGLONG Offset, PDOKAN_FILE_INFO DokanFileInfo)
 {
 	*ReadLength = 0;
-	LOG(info) << "MirrorReadFile  FileName:" << basecpp::toUTF8(FileName) << ", Offset:" << Offset << ", Buffer:" << Buffer
+	LOG(debug) << "MirrorReadFile  FileName:" << basecpp::toUTF8(FileName) << ", Offset:" << Offset << ", Buffer:" << Buffer
 		<< ", BufferLength:" << BufferLength << ", context:" << DokanFileInfo->Context;
 
 	FileHandle* fd = (FileHandle*)DokanFileInfo->Context;
@@ -330,7 +333,7 @@ static NTSTATUS DOKAN_CALLBACK MirrorReadFile(LPCWSTR FileName, LPVOID Buffer, D
 				LOG(error) << "MirrorReadFile Ewf_ReadMedia fail";
 				return STATUS_OPEN_FAILED;
 			}
-			LOG(info) << "MirrorReadFile readedLen:" << readedLen;
+			LOG(debug) << "MirrorReadFile readedLen:" << readedLen;
 			*ReadLength = readedLen;
 		}
 	}
@@ -341,28 +344,29 @@ static NTSTATUS DOKAN_CALLBACK MirrorReadFile(LPCWSTR FileName, LPVOID Buffer, D
 static NTSTATUS DOKAN_CALLBACK MirrorWriteFile(LPCWSTR FileName, LPCVOID Buffer, DWORD NumberOfBytesToWrite,
 	LPDWORD NumberOfBytesWritten, LONGLONG Offset, PDOKAN_FILE_INFO DokanFileInfo)
 {
-	LOG(info) << "MirrorWriteFile FileName:" << basecpp::toUTF8(FileName);
+	LOG(debug) << "MirrorWriteFile FileName:" << basecpp::toUTF8(FileName);
 
 	return STATUS_SUCCESS;
 }
 
 static NTSTATUS DOKAN_CALLBACK MirrorFlushFileBuffers(LPCWSTR FileName, PDOKAN_FILE_INFO DokanFileInfo)
 {
-	LOG(info) << "MirrorFlushFileBuffers FileName:" << basecpp::toUTF8(FileName);
+	LOG(debug) << "MirrorFlushFileBuffers FileName:" << basecpp::toUTF8(FileName);
 
 	return STATUS_SUCCESS;
 }
 
 static NTSTATUS DOKAN_CALLBACK MirrorGetFileInformation(LPCWSTR FileName, LPBY_HANDLE_FILE_INFORMATION HandleFileInformation, PDOKAN_FILE_INFO DokanFileInfo) {
-	LOG(info) << "MirrorGetFileInformation FileName:" << basecpp::toUTF8(FileName) << ", context:" << DokanFileInfo->Context;
+	LOG(debug) << "MirrorGetFileInformation FileName:" << basecpp::toUTF8(FileName) << ", context:" << DokanFileInfo->Context;
 	
 	return STATUS_SUCCESS;
 }
 
 static NTSTATUS DOKAN_CALLBACK MirrorFindFiles(LPCWSTR FileName, PFillFindData FillFindData, PDOKAN_FILE_INFO DokanFileInfo) {
-	LOG(info) << "MirrorFindFiles, FileName:" << basecpp::toUTF8(FileName) << ", MountPoint:" << DokanFileInfo->DokanOptions->MountPoint;
+	LOG(debug) << "MirrorFindFiles, FileName:" << basecpp::toUTF8(FileName) << ", MountPoint:" << DokanFileInfo->DokanOptions->MountPoint;
 	ImageGetRep imageGetRep;
-	listImageInImageCenter(basecpp::toUTF8(FileName), imageGetRep);
+	listImageInImageCenter(basecpp::toUTF8(FileName), model::AppConfSingleton::get_const_instance().onlyShowActive_,
+		imageGetRep);
 	LOG(info) << "child file count:" << imageGetRep.items.size();
 	BOOST_FOREACH(auto image, imageGetRep.items)
 	{
@@ -388,66 +392,66 @@ static NTSTATUS DOKAN_CALLBACK MirrorFindFiles(LPCWSTR FileName, PFillFindData F
 
 static NTSTATUS DOKAN_CALLBACK MirrorDeleteFile(LPCWSTR FileName, PDOKAN_FILE_INFO DokanFileInfo)
 {
-	LOG(info) << "MirrorDeleteFile FileName:" << basecpp::toUTF8(FileName);
+	LOG(debug) << "MirrorDeleteFile FileName:" << basecpp::toUTF8(FileName);
 	return STATUS_SUCCESS;
 }
 
 static NTSTATUS DOKAN_CALLBACK MirrorDeleteDirectory(LPCWSTR FileName, PDOKAN_FILE_INFO DokanFileInfo)
 {
-	LOG(info) << "MirrorDeleteDirectory FileName:" << basecpp::toUTF8(FileName);
+	LOG(debug) << "MirrorDeleteDirectory FileName:" << basecpp::toUTF8(FileName);
 	return STATUS_SUCCESS;
 }
 
 static NTSTATUS DOKAN_CALLBACK MirrorMoveFile(LPCWSTR ExistFileName, LPCWSTR NewFileName, BOOL ReplaceIfExisting,
 	PDOKAN_FILE_INFO DokanFileInfo)
 {
-	LOG(info) << "MirrorMoveFile ExistFileName:" << basecpp::toUTF8(ExistFileName) << ", NewFileName:" << basecpp::toUTF8(ExistFileName);
+	LOG(debug) << "MirrorMoveFile ExistFileName:" << basecpp::toUTF8(ExistFileName) << ", NewFileName:" << basecpp::toUTF8(ExistFileName);
 	return STATUS_SUCCESS;
 }
 
 static NTSTATUS DOKAN_CALLBACK MirrorLockFile(LPCWSTR FileName, LONGLONG ByteOffset, LONGLONG Length,
 	PDOKAN_FILE_INFO DokanFileInfo)
 {
-	LOG(info) << "MirrorLockFile, FileName:" << basecpp::toUTF8(FileName);
+	LOG(debug) << "MirrorLockFile, FileName:" << basecpp::toUTF8(FileName);
 	return STATUS_SUCCESS;
 }
 
 static NTSTATUS DOKAN_CALLBACK MirrorSetEndOfFile(LPCWSTR FileName, LONGLONG ByteOffset, PDOKAN_FILE_INFO DokanFileInfo)
 {
-	LOG(info) << "MirrorSetEndOfFile FileName:" << basecpp::toUTF8(FileName) << ", ByteOffset:" << ByteOffset;
+	LOG(debug) << "MirrorSetEndOfFile FileName:" << basecpp::toUTF8(FileName) << ", ByteOffset:" << ByteOffset;
 	return STATUS_SUCCESS;
 }
 
 static NTSTATUS DOKAN_CALLBACK MirrorSetAllocationSize(LPCWSTR FileName, LONGLONG AllocSize, PDOKAN_FILE_INFO DokanFileInfo)
 {
-	LOG(info) << "MirrorSetAllocationSize FileName:" << basecpp::toUTF8(FileName) << ", AllocSize:" << AllocSize;
+	LOG(debug) << "MirrorSetAllocationSize FileName:" << basecpp::toUTF8(FileName) << ", AllocSize:" << AllocSize;
 	return STATUS_SUCCESS;
 }
 
 static NTSTATUS DOKAN_CALLBACK MirrorSetFileAttributes(LPCWSTR FileName, DWORD FileAttributes, PDOKAN_FILE_INFO DokanFileInfo)
 {
-	LOG(info) << "MirrorSetFileAttributes FileName:" << basecpp::toUTF8(FileName) << ", FileAttributes:" << FileAttributes;
+	LOG(debug) << "MirrorSetFileAttributes FileName:" << basecpp::toUTF8(FileName) << ", FileAttributes:" << FileAttributes;
 	return STATUS_SUCCESS;
 }
 
 static NTSTATUS DOKAN_CALLBACK MirrorSetFileTime(LPCWSTR FileName, CONST FILETIME *CreationTime,
 	CONST FILETIME *LastAccessTime, CONST FILETIME *LastWriteTime, PDOKAN_FILE_INFO DokanFileInfo)
 {
-	LOG(info) << "MirrorSetFileTime FileName:" << basecpp::toUTF8(FileName);
+	LOG(debug) << "MirrorSetFileTime FileName:" << basecpp::toUTF8(FileName);
 	return STATUS_SUCCESS;
 }
 
 static NTSTATUS DOKAN_CALLBACK MirrorUnlockFile(LPCWSTR FileName, LONGLONG ByteOffset,
 	LONGLONG Length, PDOKAN_FILE_INFO DokanFileInfo)
 {
-	LOG(info) << "MirrorUnlockFile FileName:" << basecpp::toUTF8(FileName);
+	LOG(debug) << "MirrorUnlockFile FileName:" << basecpp::toUTF8(FileName);
 	return STATUS_SUCCESS;
 }
 
 static NTSTATUS DOKAN_CALLBACK MirrorGetFileSecurity(LPCWSTR FileName, PSECURITY_INFORMATION SecurityInformation,
 	PSECURITY_DESCRIPTOR SecurityDescriptor, ULONG BufferLength, PULONG LengthNeeded, PDOKAN_FILE_INFO DokanFileInfo)
 {
-	LOG(info) << "MirrorGetFileSecurity, FileName:" << basecpp::toUTF8(FileName);
+	LOG(debug) << "MirrorGetFileSecurity, FileName:" << basecpp::toUTF8(FileName);
 
 	BOOLEAN requestingSaclInfo;
 
@@ -484,7 +488,7 @@ static NTSTATUS DOKAN_CALLBACK MirrorGetFileSecurity(LPCWSTR FileName, PSECURITY
 
 static NTSTATUS DOKAN_CALLBACK MirrorSetFileSecurity(LPCWSTR FileName, PSECURITY_INFORMATION SecurityInformation,
 	PSECURITY_DESCRIPTOR SecurityDescriptor, ULONG SecurityDescriptorLength, PDOKAN_FILE_INFO DokanFileInfo) {
-	LOG(info) << "MirrorSetFileSecurity, FileName:" << basecpp::toUTF8(FileName);
+	LOG(debug) << "MirrorSetFileSecurity, FileName:" << basecpp::toUTF8(FileName);
 	return STATUS_SUCCESS;
 }
 
@@ -492,7 +496,7 @@ static NTSTATUS DOKAN_CALLBACK MirrorGetVolumeInformation(LPWSTR VolumeNameBuffe
 	LPDWORD MaximumComponentLength, LPDWORD FileSystemFlags, LPWSTR FileSystemNameBuffer, DWORD FileSystemNameSize,
 	PDOKAN_FILE_INFO DokanFileInfo)
 {
-	LOG(info) << "MirrorGetVolumeInformation";
+	LOG(debug) << "MirrorGetVolumeInformation";
 	UNREFERENCED_PARAMETER(DokanFileInfo);
 
 	wcscpy_s(VolumeNameBuffer, VolumeNameSize, L"DOKAN");
@@ -556,20 +560,20 @@ NTSYSCALLAPI NTSTATUS NTAPI NtQueryInformationFile(
 
 NTSTATUS DOKAN_CALLBACK MirrorFindStreams(LPCWSTR FileName, PFillFindStreamData FillFindStreamData, PDOKAN_FILE_INFO DokanFileInfo)
 {
-	LOG(info) << "MirrorFindStreams FileName:" << basecpp::toUTF8(FileName);
+	LOG(debug) << "MirrorFindStreams FileName:" << basecpp::toUTF8(FileName);
 	return STATUS_SUCCESS;
 }
 
 static NTSTATUS DOKAN_CALLBACK MirrorMounted(PDOKAN_FILE_INFO DokanFileInfo)
 {
-	LOG(info) << "MirrorMounted";
+	LOG(debug) << "MirrorMounted";
 	UNREFERENCED_PARAMETER(DokanFileInfo);
 	return STATUS_SUCCESS;
 }
 
 static NTSTATUS DOKAN_CALLBACK MirrorUnmounted(PDOKAN_FILE_INFO DokanFileInfo)
 {
-	LOG(info) << "MirrorUnmounted";
+	LOG(debug) << "MirrorUnmounted";
 	UNREFERENCED_PARAMETER(DokanFileInfo);
 	return STATUS_SUCCESS;
 }

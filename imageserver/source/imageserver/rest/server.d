@@ -10,7 +10,7 @@ import vibe.http.server;
 import vibe.http.router;
 import vibe.core.core;
 import vibe.web.rest;
-import imageserver.rest.impl.file;
+import imageserver.rest.impl.volume;
 
 
 
@@ -72,7 +72,7 @@ void startRESTServer(string ip, ushort listenPort)
 		info("linux os");
 	}
 	auto router = new URLRouter;
-	router.registerRestInterface(new FileImpl);
+	router.registerRestInterface(new VolumeImpl);
 
 	
 	router.get("/", delegate(HTTPServerRequest req, HTTPServerResponse res) {

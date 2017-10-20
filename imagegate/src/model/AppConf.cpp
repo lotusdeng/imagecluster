@@ -20,6 +20,7 @@ namespace model
 		fileLogRotationMBSize_ = pt.get<int>("root.log.file.<xmlattr>.rotationMBSize", 512);
 		fileLogAutoFlush_ = pt.get<bool>("root.log.file.<xmlattr>.autoFlush", true);
 		consoleLogLevel_ = pt.get<std::string>("root.log.console.<xmlattr>.level", "info");
+		ip_ = pt.get<std::string>("root.ip", "127.0.0.1");
 		imageCenterIP_ = pt.get<std::string>("root.imageCenter.<xmlattr>.ip", "127.0.0.1");
 		imageCenterPort_ = pt.get<int>("root.imageCenter.<xmlattr>.port", 9090);
 		imageCenterRequestTimeout_ = pt.get<int>("root.imageCenter.<xmlattr>.requestTimeout", 5);
@@ -27,6 +28,7 @@ namespace model
 		dokanOptionDebug_ = pt.get<bool>("root.dokanOption.<xmlattr>.debug", true);
 		dokanOptionStderr_ = pt.get<bool>("root.dokanOption.<xmlattr>.stderr", true);
 		dokanOptionThreadCount_ = pt.get<int>("root.dokanOption.<xmlattr>.threadCount", 1);
+		onlyShowActive_ = pt.get<bool>("root.onlyShowActive", true);
 	}
 }
 

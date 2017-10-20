@@ -19,7 +19,7 @@
 		"../bin/libimagecommon.a"
 	],
 	"sourceFiles": [
-		"../imageserver/source/imageserver/rest/api/file.d"
+		"../imageserver/source/imageserver/rest/api/volume.d"
 	],
 	"subConfigurations": {
 		"vibe-d:tls": "notls"

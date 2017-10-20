@@ -10,9 +10,12 @@ struct Image
 	std::string name_;
 	std::string path_;
 	bool isDir_;
+	bool isActive_ = false;
+	bool isUploading_ = false;
 	int64_t size_ = 0;
 	bool isOnline_;
 	std::string format_;
+	std::string localPathInImageServer_;
 	std::string smbPathInImageServer_;
 	std::string nfsPathInImageServer_;
 	std::string volumeLabelName_;
@@ -27,7 +30,7 @@ struct ImageGetRep
 	std::vector<Image> items;
 };
 
-void listImageInImageCenter(basecpp::HTTPClient& httpClient,  std::string path, ImageGetRep& rep);
+void listImageInImageCenter(basecpp::HTTPClient& httpClient,  std::string path, bool onlyShowActive, ImageGetRep& rep);
 
 
-void listImageInImageCenter(std::string path, ImageGetRep& rep);
+void listImageInImageCenter(std::string path, bool onlyShowActive, ImageGetRep& rep);

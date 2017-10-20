@@ -17,6 +17,17 @@ struct AppConf
     string logLevel;
     string vibeLogLevel;
     ImageServer[] imageServers;
+    void loadFromFile(string filePath)
+    {
+        string jsonStr = readText(filePath);
+        JSONValue jsonValue = parseJSON(jsonStr);
+        this = fromJSON!AppConf(jsonValue);
+    }
+
+    void saveToFile(string filePath)
+    {
+        write(filePath, toJSON(this).toPrettyString);
+    }
 }
 
 __gshared AppConf gAppConf;
@@ -24,19 +35,7 @@ __gshared AppConf gAppConf;
 void initAppConf(string confFilePath)
 {
     info("start load conf:", confFilePath);
-    gAppConf = loadFromFile(confFilePath);
+    gAppConf.loadFromFile(confFilePath);
     info("load conf end, listenPort:", gAppConf.port);
 }
 
-AppConf loadFromFile(string filePath)
-{
-    string jsonStr = readText(filePath);
-    JSONValue jsonValue = parseJSON(jsonStr);
-    AppConf ret = fromJSON!AppConf(jsonValue);
-    return ret;
-}
-
-void saveToFile(AppConf appConf, string filePath)
-{
-    write(filePath, toJSON(appConf).toPrettyString);
-}

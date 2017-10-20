@@ -11,6 +11,7 @@ import vibe.http.router;
 import vibe.core.core;
 import vibe.web.rest;
 import imagecenter.rest.impl.image;
+import imagecenter.rest.impl.imageserver;
 
 
 
@@ -73,6 +74,7 @@ void startRESTServer(string ip, ushort listenPort)
 	}
 	auto router = new URLRouter;
 	router.registerRestInterface(new ImageImpl);
+	router.registerRestInterface(new ImageServerImpl);
 
 	
 	router.get("/", delegate(HTTPServerRequest req, HTTPServerResponse res) {

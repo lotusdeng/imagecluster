@@ -49,10 +49,13 @@ void main(string[] args)
 	initVibeLog();
 	
 	info("--------------------------------------------------------");
-	info(baseName(args[0]), "start, processid:", thisProcessID(), "bindAddress:", gAppConf.ip, ", port:", gAppConf.port,
+	info(baseName(args[0]), "程序开始start, processid:", thisProcessID(), "bindAddress:", gAppConf.ip, ", port:", gAppConf.port,
 	", arch:", (size_t.sizeof == 4 ? "32bit" : "64bit"));
 
-	auto tid1 = spawn(&Task_CreateSmb);
+	if(gAppConf.autoSetSmb)
+	{
+		auto tid1 = spawn(&Task_CreateSmb);
+	}
 
 	startRESTServer(gAppConf.ip, gAppConf.port);
 	

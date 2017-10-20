@@ -154,6 +154,7 @@ void main(string[] args)
 	req.volumeLabelName = selectVolume.volumeLabelName;
 	req.pathInVolume = baseName(imageLocalPath);
 	req.sizeInVolume = srcFd.size;
+	req.isUploading = false;
 	string path = imagePathInCenter.indexOf("/") == -1 ? "" : baseName(imagePathInCenter);
 	info("path:", path);
 	imagecommon.rest.api.common.CommonRep commonRep = api1.postByPath(path, req);

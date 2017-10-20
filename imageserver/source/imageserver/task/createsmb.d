@@ -1,5 +1,5 @@
 module imageserver.task.createsmb;
-import imagecommon.file;
+import imagecommon.volume;
 import std.experimental.logger;
 import std.process;
 import std.format;
@@ -28,9 +28,9 @@ string[string] listSmb()
 {
     string[string] smbs;
     string cmd = "net share";
-    info(cmd);
+    trace(cmd);
     auto ret = executeShell(cmd);
-    info("cmd out:", ret.output);
+    trace("cmd out:", ret.output);
     string[] lines = ret.output.split('\n');
     foreach (line; lines)
     {
@@ -78,7 +78,7 @@ void Task_CreateSmb()
                     {
                         info(
                                 "volume already set smb, but current pathName not equal smb, first remove smb");
-                        string cmd = format!"net share %s /delete"(volume.labelName);
+                        string cmd = format!"net share %s /delete"(volume.volumeId);
                         info(cmd);
                         auto ret = executeShell(cmd);
                         info("cmd out:", ret.output);
@@ -92,7 +92,7 @@ void Task_CreateSmb()
 
                 if (needSetSmb)
                 {
-                    string cmd = format!"net share %s=%s /GRANT:%s,read"(volume.labelName,
+                    string cmd = format!"net share %s=%s /GRANT:%s,FULL"(volume.volumeId,
                             volume.pathName, gAppConf.smbAccount);
 
                     info(cmd);
@@ -109,7 +109,7 @@ void Task_CreateSmb()
             {
                 info("volume remove, volume id:", volume.volumeId, ", label:",
                         volume.labelName, ", pathName:", volume.pathName);
-                string cmd = format!"net share %s /delete"(volume.labelName);
+                string cmd = format!"net share %s /delete"(volume.volumeId);
                 info(cmd);
                 auto ret = executeShell(cmd);
                 info("cmd out:", ret.output);

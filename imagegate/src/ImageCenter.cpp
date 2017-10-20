@@ -30,7 +30,7 @@ basecpp::HTTPClient* getHttpClient()
 	}
 }
 
-void listImageInImageCenter(basecpp::HTTPClient& httpClient, std::string path, ImageGetRep& rep)
+void listImageInImageCenter(basecpp::HTTPClient& httpClient, std::string path, bool onlyShowActive, ImageGetRep& rep)
 {
 	boost::algorithm::trim_left_if(path, boost::algorithm::is_any_of("\\"));
 	boost::algorithm::replace_all(path, "\\", "/");
@@ -72,10 +72,17 @@ void listImageInImageCenter(basecpp::HTTPClient& httpClient, std::string path, I
 		item.name_ = child.second.get<std::string>("name");
 		item.path_ = child.second.get<std::string>("path");
 		item.isDir_ = child.second.get<bool>("isDir");
+		item.isActive_ = child.second.get<bool>("isEnd", false);
+		if (onlyShowActive && !item.isActive_)
+		{
+			continue;
+		}
+		item.isUploading_ = child.second.get<bool>("isUploading", false);
 		item.size_ = child.second.get<int64_t>("size", 0);
 		item.isOnline_ = child.second.get<bool>("isOnline");
 		item.format_ = child.second.get<std::string>("format");
-		item.smbPathInImageServer_ = child.second.get<std::string>("smbPathInImageServer");
+		item.localPathInImageServer_ = child.second.get<std::string>("localPathInImageServer", "");
+		item.smbPathInImageServer_ = child.second.get<std::string>("smbPathInImageServer", "");
 		item.nfsPathInImageServer_ = child.second.get<std::string>("nfsPathInImageServer");
 		item.volumeLabelName_ = child.second.get<std::string>("volumeLabelName");
 		item.pathInVolume_ = child.second.get<std::string>("pathInVolume");
@@ -85,8 +92,8 @@ void listImageInImageCenter(basecpp::HTTPClient& httpClient, std::string path, I
 }
 
 
-void listImageInImageCenter(std::string path, ImageGetRep& rep)
+void listImageInImageCenter(std::string path, bool onlyShowActive, ImageGetRep& rep)
 {
 	basecpp::HTTPClient* httpClient = getHttpClient();
-	listImageInImageCenter(*httpClient, path, rep);
+	listImageInImageCenter(*httpClient, path, onlyShowActive, rep);
 }
