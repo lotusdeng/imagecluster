@@ -18,7 +18,7 @@ struct Image
 	std::string localPathInImageServer_;
 	std::string smbPathInImageServer_;
 	std::string nfsPathInImageServer_;
-	std::string volumeLabelName_;
+	std::string volumeId_;
 	std::string pathInVolume_;
 	int64_t sizeInVolume_ = 0;
 };

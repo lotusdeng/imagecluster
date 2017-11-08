@@ -72,7 +72,7 @@ void listImageInImageCenter(basecpp::HTTPClient& httpClient, std::string path, b
 		item.name_ = child.second.get<std::string>("name");
 		item.path_ = child.second.get<std::string>("path");
 		item.isDir_ = child.second.get<bool>("isDir");
-		item.isActive_ = child.second.get<bool>("isEnd", false);
+		item.isActive_ = child.second.get<bool>("isActive", false);
 		if (onlyShowActive && !item.isActive_)
 		{
 			continue;
@@ -84,7 +84,7 @@ void listImageInImageCenter(basecpp::HTTPClient& httpClient, std::string path, b
 		item.localPathInImageServer_ = child.second.get<std::string>("localPathInImageServer", "");
 		item.smbPathInImageServer_ = child.second.get<std::string>("smbPathInImageServer", "");
 		item.nfsPathInImageServer_ = child.second.get<std::string>("nfsPathInImageServer");
-		item.volumeLabelName_ = child.second.get<std::string>("volumeLabelName");
+		item.volumeId_ = child.second.get<std::string>("volumeId");
 		item.pathInVolume_ = child.second.get<std::string>("pathInVolume");
 		item.sizeInVolume_ = child.second.get<int64_t>("sizeInVolume", 0);
 		rep.items.push_back(item);

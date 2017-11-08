@@ -37,7 +37,7 @@ version (Windows)
 
         while (true)
         {
-            int volumeNameLen = strlen(volumeName.ptr);
+            size_t volumeNameLen = strlen(volumeName.ptr);
             //volumeName = volumeName[0..len];
             trace("volume:", volumeName[0..volumeNameLen]);
             if (volumeName[0] != '\\' || volumeName[1] != '\\'
@@ -59,11 +59,11 @@ version (Windows)
             char[256] labelName = void;
             BOOL ret = GetVolumeInformationA(volumeName.ptr, labelName.ptr,
                     labelName.length, NULL, NULL, NULL, NULL, 0);
-            int labelNameLen = strlen(labelName.ptr);
+            size_t labelNameLen = strlen(labelName.ptr);
 
             char[32] pathName;
             GetVolumePathNamesForVolumeNameA(volumeName.ptr, pathName.ptr, pathName.length, NULL);
-            int pathNameLen = strlen(pathName.ptr);
+            size_t pathNameLen = strlen(pathName.ptr);
             Volume volume;
             if(volumeNameLen != 0) volume.volumeName = volumeName[0..volumeNameLen].dup;
             if(labelNameLen != 0) volume.labelName = labelName[0..labelNameLen].dup;

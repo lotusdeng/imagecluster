@@ -358,6 +358,14 @@ static NTSTATUS DOKAN_CALLBACK MirrorFlushFileBuffers(LPCWSTR FileName, PDOKAN_F
 
 static NTSTATUS DOKAN_CALLBACK MirrorGetFileInformation(LPCWSTR FileName, LPBY_HANDLE_FILE_INFORMATION HandleFileInformation, PDOKAN_FILE_INFO DokanFileInfo) {
 	LOG(debug) << "MirrorGetFileInformation FileName:" << basecpp::toUTF8(FileName) << ", context:" << DokanFileInfo->Context;
+
+	FileHandle* fd = (FileHandle*)DokanFileInfo->Context;
+	if (fd != nullptr)
+	{
+		memset(HandleFileInformation, 0, sizeof(BY_HANDLE_FILE_INFORMATION));
+		HandleFileInformation->nFileSizeHigh = fd->size_ >> 32;
+		HandleFileInformation->nFileSizeLow = fd->size_ & 0xffffffff;
+	}
 	
 	return STATUS_SUCCESS;
 }

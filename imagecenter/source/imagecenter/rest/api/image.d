@@ -19,7 +19,7 @@ struct Image
 	string localPathInImageServer;
 	string smbPathInImageServer;
 	string nfsPathInImageServer;
-	string volumeLabelName;
+	string volumeId;
 	string pathInVolume;
 	long sizeInVolume;
 	void loadFromFile(string filePath)
@@ -46,11 +46,12 @@ struct ImagePostReq
 {
 	string name;
 	bool isDir;
-	bool isUploading = false;
+	@optional bool isActive = true;
+	@optional bool isUploading = false;
 	string format = "dd";
 	@optional string smbPathInImageServer;
 	@optional string nfsPathInImageServer;
-	@optional string volumeLabelName;
+	@optional string volumeId;
 	@optional string pathInVolume;
 	@optional long sizeInVolume;
 }

@@ -8,7 +8,7 @@ POST /image?path
 	"isDir": true
 }
 
-//从目录vmdir1下创建虚拟机
+//从目录vmdir1下创建镜像
 POST /image?path=imagedir1
 {
 	"name": "image1",
@@ -16,7 +16,7 @@ POST /image?path=imagedir1
 	"format": "raw",
 	"smbPathInImageServer": "\\\\127.0.0.1\\Lotus\\os\\CentOS-6.5-x86_64-bin-DVD1.iso",
 	"nfsPathInImageServer": "//127.0.0.1/Lotus/os/CentOS-6.5-x86_64-bin-DVD1.iso",
-    "volumeLabelName": "Lotus",
+    "volumeId": "c82e2d01",
     "pathInVolume": "os/CentOS-6.5-x86_64-bin-DVD1.iso",
     "sizeInVolume": 4467982336
 }
@@ -24,9 +24,9 @@ POST /image?path=imagedir1
 	"name": "image1",
 	"isDir": false,
 	"format": "ewf",
-	"smbPathInImageServer": "\\\\127.0.0.1\\Lotus\\os\\hack1.E01",
-	"nfsPathInImageServer": "//127.0.0.1/Lotus/os/hack1.E01",
-    "volumeLabelName": "Lotus",
+	"smbPathInImageServer": "\\\\127.0.0.1\\f481f1ee\\os\\hack1.E01",
+	"nfsPathInImageServer": "//127.0.0.1/f481f1ee/os/hack1.E01",
+    "volumeId": "c82e2d01",
     "pathInVolume": "os/hack1.E01",
     "sizeInVolume": 3124542822 
 }

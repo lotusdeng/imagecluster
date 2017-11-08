@@ -60,17 +60,13 @@ Volume[string] getVolumeFromAllImageServer()
             {
                 foreach (item; ret.items)
                 {
-                    if (item.labelName.length == 0)
-                    {
-                        continue;
-                    }
                     Volume volume;
                     volume.imageServerIP = server.ip;
                     volume.imageServerPort = server.port;
                     volume.labelName = item.labelName;
                     volume.volumeId = item.volumeId;
                     volume.pathName = item.pathName;
-                    volumes[volume.labelName] = volume;
+                    volumes[volume.volumeId] = volume;
                 }
             }
         }
@@ -117,7 +113,7 @@ class ImageImpl : ImageApi
                     item.loadFromFile(dirItem.name);
                     item.name = baseName(dirItem.name);
                     item.path = chompPrefix(dirItem.name, localPath);
-                    if (item.volumeLabelName in volumes)
+                    if (item.volumeId in volumes)
                     {
                         item.isOnline = true;
                     }
@@ -134,9 +130,9 @@ class ImageImpl : ImageApi
             Image item;
             item.loadFromFile(localPath);
             item.name = baseName(localPath);
-            if (item.volumeLabelName in volumes)
+            if (item.volumeId in volumes)
             {
-                Volume volume = volumes[item.volumeLabelName];
+                Volume volume = volumes[item.volumeId];
                 item.isOnline = true;
                 item.nfsPathInImageServer = format!"//%s/%s/%s"(volume.imageServerIP,
                         volume.labelName, item.pathInVolume);
@@ -184,7 +180,7 @@ class ImageImpl : ImageApi
             item.isUploading = data.isUploading;
             item.isDir = data.isDir;
             item.format = data.format;
-            item.volumeLabelName = data.volumeLabelName;
+            item.volumeId = data.volumeId;
             item.pathInVolume = data.pathInVolume;
             item.sizeInVolume = data.sizeInVolume;
             item.smbPathInImageServer = data.smbPathInImageServer;
@@ -200,6 +196,7 @@ class ImageImpl : ImageApi
                     item.size = getEwfMediaSize(data.smbPathInImageServer);
                 }
             }
+            item.isActive = data.isActive;
             info("save to file:", localPath);
             item.saveToFile(localPath);
         }
